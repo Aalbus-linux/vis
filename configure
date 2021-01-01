@@ -294,83 +294,9 @@ else
 	CONFIG_HELP=0
 fi
 
-CONFIG_CURSES=0
-
-if test "$curses" != "no" ; then
-
-	printf "checking for libcurses...\n"
-
-cat > "$tmpc" <<EOF
-#include <curses.h>
-
-int main(int argc, char *argv[]) {
-	initscr();
-	endwin();
-	return 0;
-}
-EOF
-
-	for libcurses in ncursesw ncurses curses; do
-		printf " checking for %s... " "$libcurses"
-
-		if test "$have_pkgconfig" = "yes" ; then
-			CFLAGS_CURSES=$(pkg-config --cflags $libcurses 2>/dev/null)
-			LDFLAGS_CURSES=$(pkg-config --libs $libcurses 2>/dev/null)
-			if test $? -eq 0 && $CC $CFLAGS $CFLAGS_CURSES "$tmpc" \
-				$LDFLAGS $LDFLAGS_CURSES -o "$tmpo" >/dev/null 2>&1 ; then
-				CONFIG_CURSES=1
-				printf "yes\n"
-				break
-			fi
-		fi
-
-		CFLAGS_CURSES=""
-		LDFLAGS_CURSES="-l$libcurses"
-
-		if $CC $CFLAGS $CFLAGS_CURSES "$tmpc" \
-			$LDFLAGS $LDFLAGS_CURSES -o "$tmpo" >/dev/null 2>&1 ; then
-			CONFIG_CURSES=1
-			printf "yes\n"
-			break
-		else
-			CFLAGS_CURSES=""
-			LDFLAGS_CURSES=""
-			printf "no\n"
-		fi
-	done
-
-	test "$curses" = "yes" -a $CONFIG_CURSES -ne 1 && fail "$0: cannot find libcurses"
-fi
+CONFIG_CURSES=1
 
 # libtermkey is a mandatory dependency
-
-printf "checking for libtermkey... "
-cat > "$tmpc" <<EOF
-#include <termkey.h>
-
-int main(int argc, char *argv[]) {
-	TERMKEY_CHECK_VERSION;
-	return 0;
-}
-EOF
-
-if test "$have_pkgconfig" = "yes" ; then
-	CFLAGS_TERMKEY=$(pkg-config --cflags termkey 2>/dev/null)
-	LDFLAGS_TERMKEY=$(pkg-config --libs termkey 2>/dev/null)
-fi
-
-if test -z "$LDFLAGS_TERMKEY"; then
-	CFLAGS_TERMKEY=""
-	LDFLAGS_TERMKEY="-ltermkey"
-fi
-
-if $CC $CFLAGS $CFLAGS_TERMKEY "$tmpc" $LDFLAGS $LDFLAGS_TERMKEY $LDFLAGS_CURSES \
-	-o "$tmpo" >/dev/null 2>&1; then
-	printf "%s\n" "yes"
-else
-	printf "%s\n" "no"
-	fail "$0: cannot find libtermkey"
-fi
 
 CONFIG_TRE=0
 REGEX_SRC=text-regex.c
